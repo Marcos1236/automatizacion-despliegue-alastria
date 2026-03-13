@@ -1,0 +1,59 @@
+---
+- name: Crear directorios de datos para Alastria
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0775'
+  become: yes
+  loop:
+    - /data/alastria-node-besu/database
+    - /data/alastria-node-besu/logs
+    - /data/alastria-node-besu/keys
+
+- name: Clonar el repositorio oficial de Alastria-B
+  git:
+    repo: 'https://github.com/alastria/alastria-node-besu.git'
+    dest: "/home/{{ ansible_user }}/alastria-node-besu"
+    version: main
+    force: yes
+
+- name: Inyectar la configuración del entorno (.env)
+  template:
+    src: .env.j2
+    dest: "/home/{{ ansible_user }}/alastria-node-besu/docker-compose/.env"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Bajar el contenedor y limpiar base de datos previa
+  shell: docker compose down --remove-orphans || true
+  args:
+    chdir: "/home/{{ ansible_user }}/alastria-node-besu/docker-compose"
+  become: yes
+
+- name: Habilitar el puerto RPC 8545 en docker-compose.yaml
+  replace:
+    path: "/home/{{ ansible_user }}/alastria-node-besu/docker-compose/docker-compose.yaml"
+    regexp: '#\s*-\s*"8545:8545/tcp"'
+    replace: '- "8545:8545/tcp"'
+
+- name: Construir y levantar el nodo
+  shell: docker compose up --build -d
+  args:
+    chdir: "/home/{{ ansible_user }}/alastria-node-besu/docker-compose"
+  become: yes
+
+- name: Esperar 20 segundos para que el nodo arranque
+  pause:
+    seconds: 20
+
+- name: Verificar que el contenedor está corriendo
+  shell: "docker ps --filter 'name={{ node_name }}' --format '{% raw %}{{.Status}}{% endraw %}'"
+  become: yes
+  register: container_status
+
+- name: Mostrar estado del contenedor
+  debug:
+    msg: "Estado del nodo {{ node_name }}: {{ container_status.stdout | default('No encontrado') }}"
