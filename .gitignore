@@ -1,0 +1,12 @@
+# Vagrant
+.vagrant/
+
+# Ansible
+*.retry
+
+# Claves SSH y ficheros sensibles
+*.pem
+*.key
+
+# Sistema
+.DS_Store
