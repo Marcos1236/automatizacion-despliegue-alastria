@@ -1,0 +1,9 @@
+---
+- name: Preparación del servidor para el Nodo Alastria-B
+  hosts: nodos_alastria
+  gather_facts: yes
+
+  roles:
+    - common
+    - docker
+    - besu_node
