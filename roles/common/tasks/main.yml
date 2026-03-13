@@ -1,0 +1,43 @@
+---
+- name: Actualizar la caché de los repositorios APT
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+
+- name: Instalar dependencias base del sistema
+  apt:
+    name:
+      - git
+      - curl
+      - ufw
+      - apt-transport-https
+      - ca-certificates
+      - software-properties-common
+    state: present
+  become: yes
+
+- name: Configurar el firewall (UFW) - Permitir conexiones SSH
+  community.general.ufw:
+    rule: allow
+    name: OpenSSH
+  become: yes
+
+- name: Configurar el firewall (UFW) - Permitir tráfico P2P de Alastria (Puerto 30303)
+  community.general.ufw:
+    rule: allow
+    port: '30303'
+    proto: tcp
+  become: yes
+
+- name: Configurar el firewall (UFW) - Permitir API RPC de Besu (Puerto 8545)
+  community.general.ufw:
+    rule: allow
+    port: '8545'
+    proto: tcp
+  become: yes
+
+- name: Activar el firewall UFW para blindar el servidor
+  community.general.ufw:
+    state: enabled
+  become: yes
