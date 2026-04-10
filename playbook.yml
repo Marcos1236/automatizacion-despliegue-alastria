@@ -7,3 +7,4 @@
     - common
     - docker
     - besu_node
+    - monitoring

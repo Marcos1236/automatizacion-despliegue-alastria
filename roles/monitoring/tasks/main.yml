@@ -1,0 +1,62 @@
+---
+- name: Crear directorio para monitorización
+  file:
+    path: "/home/{{ ansible_user }}/monitoring"
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0775'
+  become: yes
+
+- name: Copiar configuración de Prometheus
+  template:
+    src: prometheus.yml.j2
+    dest: "/home/{{ ansible_user }}/monitoring/prometheus.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Copiar docker-compose de monitorización
+  template:
+    src: docker-compose.yml.j2
+    dest: "/home/{{ ansible_user }}/monitoring/docker-compose.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Abrir puerto de Grafana (3000) en el firewall (UFW)
+  community.general.ufw:
+    rule: allow
+    port: '3000'
+    proto: tcp
+  become: yes
+
+- name: Copiar aprovisionamiento del Datasource de Grafana
+  template:
+    src: datasource.yml.j2
+    dest: "/home/{{ ansible_user }}/monitoring/datasource.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Copiar aprovisionamiento de Dashboards de Grafana
+  template:
+    src: dashboards.yml.j2
+    dest: "/home/{{ ansible_user }}/monitoring/dashboards.yml"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Copiar el panel JSON de Besu
+  copy:
+    src: besu_dashboard.json
+    dest: "/home/{{ ansible_user }}/monitoring/besu_dashboard.json"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: '0644'
+
+- name: Levantar stack de monitorización (Prometheus + Grafana)
+  shell: docker compose up -d
+  args:
+    chdir: "/home/{{ ansible_user }}/monitoring"
+  become: yes
