@@ -41,3 +41,32 @@
   community.general.ufw:
     state: enabled
   become: yes
+
+- name: Instalar Fail2ban para prevenir ataques de fuerza bruta
+  apt:
+    name: fail2ban
+    state: present
+  become: yes
+
+- name: Configurar Fail2ban (jail.local) para proteger el puerto SSH
+  copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      port = ssh
+      filter = sshd
+      logpath = /var/log/auth.log
+      maxretry = 5
+      bantime = 3600
+    owner: root
+    group: root
+    mode: '0644'
+  become: yes
+
+- name: Asegurar que Fail2ban está iniciado y habilitado en el arranque
+  service:
+    name: fail2ban
+    state: started
+    enabled: yes
+  become: yes
