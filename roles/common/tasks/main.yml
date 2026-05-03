@@ -27,7 +27,7 @@
   community.general.ufw:
     rule: allow
     port: '30303'
-    proto: tcp
+    proto: any
   become: yes
 
 - name: Configurar el firewall (UFW) - Permitir API RPC de Besu (Puerto 8545)
@@ -37,7 +37,7 @@
     proto: tcp
   become: yes
 
-- name: Activar el firewall UFW para blindar el servidor
+- name: Activar el firewall UFW 
   community.general.ufw:
     state: enabled
   become: yes
@@ -48,7 +48,7 @@
     state: present
   become: yes
 
-- name: Configurar Fail2ban (jail.local) para proteger el puerto SSH
+- name: Configurar Fail2ban para proteger el puerto SSH
   copy:
     dest: /etc/fail2ban/jail.local
     content: |

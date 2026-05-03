@@ -1,4 +1,4 @@
 ---
-node_name: "REG_UNIZAR_B_2_4_00"
+node_name: "REG_UNIZAR_B_{{ ansible_processor_vcpus }}_{{ (ansible_memtotal_mb / 1024) | round | int }}_00"
 node_type: "regular"
 node_branch: "main"
