@@ -30,13 +30,6 @@
     proto: any
   become: yes
 
-- name: Configurar el firewall (UFW) - Permitir API RPC de Besu (Puerto 8545)
-  community.general.ufw:
-    rule: allow
-    port: '8545'
-    proto: tcp
-  become: yes
-
 - name: Activar el firewall UFW 
   community.general.ufw:
     state: enabled
